@@ -134,7 +134,7 @@ namespace FThingSoftware
         }
 
 
-        public static Quaternion LookRotation(Vector3 forward, Vector3 upwards)
+        public static Quaternion LookRotation(Vector3 forward, Vector3 upwards, Transform objTransform)
         {
             // forwardが向きたい方向で、upwardsがどの軸を上にするか
             // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
@@ -142,48 +142,47 @@ namespace FThingSoftware
             // Vector3.forwardからforwardに向ける回転を取得
             Quaternion look = FromToRotation(Vector3.forward, forward);
 
+            // 水平面と青軸との角度を求める
+            // 回転後の青軸の向きを求める
+            Vector3 zAxisAfterRotate = look.ToUnity() * Vector3.forward;
+            // 水平方向のみの成分にする
+            Vector3 zAxisHorizontal = new Vector3(zAxisAfterRotate.x, 0f, zAxisAfterRotate.z);
 
-            // 青軸を中心にしてrad回転させる
-            //Quaternion modify = Quaternion.AngleAxis(90, forward);
-            //return modify * look;
+            // デバッグ
+            Debug.DrawRay (objTransform.position, zAxisHorizontal * 2.0f, Color.red, 0.1f, false);
+            Debug.DrawRay (objTransform.position, zAxisAfterRotate * 2.0f, Color.blue, 0.1f, false);
 
-            // 真上と緑軸の角度を求める
-            //回転を適用させた後の緑軸の向き
-            Vector3 upAfterRotate = look.ToUnity() * Vector3.up;
-            float rad = MathF.Acos(
-                Vector3.Dot(upAfterRotate, Vector3.up)
-                / (upAfterRotate.magnitude * Vector3.up.magnitude)
-                );
-
-            Debug.Log(rad * Mathf.Rad2Deg);
-
-            Quaternion modify = Quaternion.AngleAxis(rad * Mathf.Rad2Deg, forward);
-            return modify * look;
-
-            return look;
-
-            // 回転を適用させた後の緑軸の向きを取得する
-            // Vector3 upAfterRotate = look.ToUnity() * Vector3.up;
-
-            // 回転後の正面ベクトルの向きベクトルに関して、水平方向のみの成分をとったものを取得する
-            Vector3 forwardAfterRotate = look.ToUnity() * Vector3.forward;
-            Vector3 horizontalForwardAfterRotate = new Vector3(forwardAfterRotate.x, 0, forwardAfterRotate.z);
-
-            // このベクトルとから回転後のベクトルにする回転を求める
-            //Quaternion modify = Quaternion.FromToRotation(horizontalForwardAfterRotate, forwardAfterRotate);
             // 角度を求める
+            float rad = MathF.Acos(Vector3.Dot(zAxisHorizontal, zAxisAfterRotate) / (zAxisHorizontal.magnitude * zAxisAfterRotate.magnitude));
+            Debug.Log(rad * Mathf.Rad2Deg);
 
-            // 内積の定義から回転量を求める a・b = |a||b|cosθ なので
-            //float rad = MathF.Acos(
-            //    Vector3.Dot(horizontalForwardAfterRotate, forwardAfterRotate)
-            //    / (horizontalForwardAfterRotate.magnitude * forwardAfterRotate.magnitude)
-            //    );
+            // 裏にあるか表にあるか求める
+            // OP zAxisAfterRotate
+            // 法線ベクトルn Vector3.up
+            float reverse = Vector3.Dot(zAxisAfterRotate, Vector3.up);
+            Debug.Log(reverse);
+            // 正の値なら+, 負の値なら-なので、角度を変更する
+            rad = reverse >= 0 ? rad : -rad;
 
             Debug.Log(rad * Mathf.Rad2Deg);
 
-            // 青軸を中心にしてrad回転させる
-            // Quaternion modify = Quaternion.AngleAxis(rad * Mathf.Rad2Deg, forward);
+            // return look;
 
+            // 真上の緑軸を赤軸を中心に角度だけ回転させた軸を計算する
+
+            // 回転後の赤軸の水平方向のみの成分を求める
+            Vector3 xAxisAfterRotate = look.ToUnity() * Vector3.right;
+            Vector3 xAxisHorizontal = new Vector3(xAxisAfterRotate.x, 0, xAxisAfterRotate.z);
+            // これを軸として、緑軸を回転させる
+            Quaternion yModify = Quaternion.AngleAxis(-rad * Mathf.Rad2Deg, xAxisHorizontal);
+            // 上を修正した緑軸の向きを求める
+            Vector3 yModifyRotate = yModify.ToUnity() * Vector3.up;
+
+            // 回転後の緑軸の向きを求める
+            Vector3 yAxisAfterRotate = look.ToUnity() * Vector3.up;
+
+            // 回転後の緑軸から、上を修正した緑軸へ向かう回転を求める
+            Quaternion modify = Quaternion.FromToRotation(yAxisAfterRotate, yModifyRotate);
 
             return modify * look;
         }
