@@ -96,17 +96,7 @@ namespace FThingSoftware
         // fromDirectionからtoDirectionへの回転を作成する
         public void SetFromToRotation(Vector3 fromDirection, Vector3 toDirection)
         {
-            // 外積を用いて、軸ベクトルを求める
-            Vector3 axis = Vector3.Cross(fromDirection, toDirection);
-            // 外積が(0,0,0)の時は、無回転のクォータニオン(0,0,0,1)にする
-            if(axis == Vector3.zero) { this = identity; return; }
-
-            // 外積の定義から回転量を求める
-            // |a||b|sinΘ = axis.magnitude なので
-            float rad = MathF.Asin(axis.magnitude / ( fromDirection.magnitude * toDirection.magnitude));
-
-            // 求めた軸と回転量でクォータニオンの生成と適用
-            this = AngleAxis(Mathf.Rad2Deg * rad, axis);
+            this = FromToRotation(fromDirection, toDirection);
         }
 
         // 指定した forward と upwards 方向に回転する
@@ -147,13 +137,71 @@ namespace FThingSoftware
         public static Quaternion LookRotation(Vector3 forward, Vector3 upwards)
         {
             // forwardが向きたい方向で、upwardsがどの軸を上にするか
+            // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
 
-            // 今向いている方向から向けたい方向への回転を計算できれば良い
-            // 今向いている方向というのが、upwardsに対する正面の向きベクトルなのだと思われる
+            // Vector3.forwardからforwardに向ける回転を取得
+            Quaternion look = FromToRotation(Vector3.forward, forward);
 
-            
 
-            return Quaternion.identity;
+            // 青軸を中心にしてrad回転させる
+            //Quaternion modify = Quaternion.AngleAxis(90, forward);
+            //return modify * look;
+
+            // 真上と緑軸の角度を求める
+            //回転を適用させた後の緑軸の向き
+            Vector3 upAfterRotate = look.ToUnity() * Vector3.up;
+            float rad = MathF.Acos(
+                Vector3.Dot(upAfterRotate, Vector3.up)
+                / (upAfterRotate.magnitude * Vector3.up.magnitude)
+                );
+
+            Debug.Log(rad * Mathf.Rad2Deg);
+
+            Quaternion modify = Quaternion.AngleAxis(rad * Mathf.Rad2Deg, forward);
+            return modify * look;
+
+            return look;
+
+            // 回転を適用させた後の緑軸の向きを取得する
+            // Vector3 upAfterRotate = look.ToUnity() * Vector3.up;
+
+            // 回転後の正面ベクトルの向きベクトルに関して、水平方向のみの成分をとったものを取得する
+            Vector3 forwardAfterRotate = look.ToUnity() * Vector3.forward;
+            Vector3 horizontalForwardAfterRotate = new Vector3(forwardAfterRotate.x, 0, forwardAfterRotate.z);
+
+            // このベクトルとから回転後のベクトルにする回転を求める
+            //Quaternion modify = Quaternion.FromToRotation(horizontalForwardAfterRotate, forwardAfterRotate);
+            // 角度を求める
+
+            // 内積の定義から回転量を求める a・b = |a||b|cosθ なので
+            //float rad = MathF.Acos(
+            //    Vector3.Dot(horizontalForwardAfterRotate, forwardAfterRotate)
+            //    / (horizontalForwardAfterRotate.magnitude * forwardAfterRotate.magnitude)
+            //    );
+
+            Debug.Log(rad * Mathf.Rad2Deg);
+
+            // 青軸を中心にしてrad回転させる
+            // Quaternion modify = Quaternion.AngleAxis(rad * Mathf.Rad2Deg, forward);
+
+
+            return modify * look;
+        }
+
+        // fromDirection から toDirection への回転を作成して返す
+        public static Quaternion FromToRotation(Vector3 fromDirection, Vector3 toDirection)
+        {
+            // 外積を用いて、軸ベクトルを求める
+            Vector3 axis = Vector3.Cross(fromDirection, toDirection);
+
+            // 外積が(0,0,0)の時は、無回転のクォータニオン(0,0,0,1)にする
+            if (axis == Vector3.zero) { return identity; }
+
+            // 内積の定義から回転量を求める a・b = |a||b|cosθ なので
+            float rad = MathF.Acos(Vector3.Dot(fromDirection, toDirection) / (fromDirection.magnitude * toDirection.magnitude)); 
+
+            // 求めた軸と回転量でクォータニオンの生成
+            return AngleAxis(Mathf.Rad2Deg * rad, axis);
         }
 
         // 正規化を行ったものを返す(Unityの実装を引用)
