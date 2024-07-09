@@ -7,6 +7,8 @@ public class RotateCube : MonoBehaviour
     public GameObject unityObj;
     public GameObject originalObj;
 
+    public GameObject targetObj;
+
     public Quaternion unityQuaternion;
     public FThingSoftware.Quaternion originalQuaternion;
 
@@ -49,13 +51,15 @@ public class RotateCube : MonoBehaviour
         // originalObj.transform.rotation = originalQuaternion.ToUnity();
         // Debug.Log(originalQuaternion.eulerAngle);
 
-        unityQuaternion.eulerAngles = axis;
+        // unityQuaternion.eulerAngles = axis;
+        // unityObj.transform.rotation = unityQuaternion;
+
+        // originalQuaternion.eulerAngle = axis;
+        // originalObj.transform.rotation = originalQuaternion.ToUnity();
+
+        // Test LookRotation
+        Vector3 look = targetObj.transform.position - this.transform.position;
+        unityQuaternion = Quaternion.LookRotation(look);
         unityObj.transform.rotation = unityQuaternion;
-
-        originalQuaternion.eulerAngle = axis;
-        originalObj.transform.rotation = originalQuaternion.ToUnity();
-
-        Debug.Log(unityQuaternion.normalized);
-        Debug.Log(originalQuaternion);
     }
 }
