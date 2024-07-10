@@ -22,47 +22,50 @@ public class RotateCube : MonoBehaviour
 
     void Start()
     {
-        // unityQuaternion = Quaternion.identity;
-        // unityQuaternion = Quaternion.AngleAxis(0, transform.up);
 
-        // originalQuaternion = FThingSoftware.Quaternion.AngleAxis(30, transform.up);
-        // originalObj.transform.rotation = originalQuaternion.ToUnity();
-        // Debug.Log(originalQuaternion.eulerAngle);
     }
 
     void Update()
     {
         // Test AngleAxis()
-        // unityQuaternion = Quaternion.AngleAxis(angle, axis);
-        // unityObj.transform.rotation = unityQuaternion;
-        // originalQuaternion = FThingSoftware.Quaternion.AngleAxis(angle, axis);
-        // originalObj.transform.rotation = originalQuaternion.ToUnity();
+        //unityQuaternion = Quaternion.AngleAxis(angle, axis);
+        //unityObj.transform.rotation = unityQuaternion;
+        //originalQuaternion = FThingSoftware.Quaternion.AngleAxis(angle, axis);
+        //originalObj.transform.rotation = originalQuaternion;
+
 
         // Test SetFromToRotation()
         // unityQuaternion.SetFromToRotation(fromDirection, toDirection);
-        // originalQuaternion.SetFromToRotation(fromDirection, toDirection);
+        //originalQuaternion.SetFromToRotation(fromDirection, toDirection);
+
 
         // Test eulerAngle
-        // unityQuaternion = Quaternion.AngleAxis(angle, axis);
-        // unityObj.transform.rotation = unityQuaternion;
-        // Debug.Log(unityQuaternion.eulerAngles);
+        //unityQuaternion = Quaternion.AngleAxis(angle, axis);
+        //unityObj.transform.rotation = unityQuaternion;
+        //Debug.Log(unityQuaternion.eulerAngles);
 
-        // originalQuaternion = FThingSoftware.Quaternion.AngleAxis(angle, axis);
-        // originalObj.transform.rotation = originalQuaternion.ToUnity();
-        // Debug.Log(originalQuaternion.eulerAngle);
+        //originalQuaternion = FThingSoftware.Quaternion.AngleAxis(angle, axis);
+        //originalObj.transform.rotation = originalQuaternion;
+        //Debug.Log(originalQuaternion.eulerAngle);
 
-        // unityQuaternion.eulerAngles = axis;
-        // unityObj.transform.rotation = unityQuaternion;
+        //unityQuaternion.eulerAngles = axis;
+        //unityObj.transform.rotation = unityQuaternion;
 
-        // originalQuaternion.eulerAngle = axis;
-        // originalObj.transform.rotation = originalQuaternion.ToUnity();
+        //originalQuaternion.eulerAngle = axis;
+        //originalObj.transform.rotation = originalQuaternion;
+
 
         // Test LookRotation
-        Vector3 look = targetObj.transform.position - this.transform.position;
-        unityQuaternion = Quaternion.LookRotation(look);
-        unityObj.transform.rotation = unityQuaternion;
+        //Vector3 look = targetObj.transform.position - this.transform.position;
+        //unityQuaternion = Quaternion.LookRotation(look);
+        //unityObj.transform.rotation = unityQuaternion;
 
-        originalQuaternion = FThingSoftware.Quaternion.LookRotation(look, Vector3.up, originalObj.transform);
-        originalObj.transform.rotation = originalQuaternion.ToUnity();
+        //originalQuaternion = FThingSoftware.Quaternion.LookRotation(look);
+        //originalObj.transform.rotation = originalQuaternion;
+
+        // Test ToAngleAxis
+        Quaternion qua1 = Quaternion.AngleAxis(30, Vector3.up);
+        Quaternion qua2 = Quaternion.AngleAxis(45, Vector3.right);
+        Quaternion qua3 = Quaternion.AngleAxis(90, Vector3.forward);
     }
 }

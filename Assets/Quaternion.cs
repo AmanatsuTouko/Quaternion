@@ -100,9 +100,16 @@ namespace FThingSoftware
         }
 
         // 指定した forward と upwards 方向に回転する
-        public static void SetLookRotation(Vector3 view, Vector3 up)
+        public void SetLookRotation(Vector3 view)
         {
+            this = LookRotation(view);
+        }
 
+        // 回転を座標に対する角度の値(AngleAxis)に変換する
+        public void ToAngleAxis(out float angle, out Vector3 axis)
+        {
+            angle = 0;
+            axis = Vector3.zero;
         }
 
         // static関数
@@ -134,7 +141,7 @@ namespace FThingSoftware
         }
 
 
-        public static Quaternion LookRotation(Vector3 forward, Vector3 upwards, Transform objTransform)
+        public static Quaternion LookRotation(Vector3 forward)
         {
             // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
             // upwardsがどの軸を上にするかを指定する
@@ -144,32 +151,31 @@ namespace FThingSoftware
 
             // Look後のz軸(青)を求める
             Vector3 zAxisAfterLook = lookRotation.ToUnity() * Vector3.forward;
-            // 水平方向のみの成分にする
-            Vector3 zAxisHorizontal = new Vector3(zAxisAfterLook.x, 0f, zAxisAfterLook.z);
-
-            // デバッグ
-            Debug.DrawRay(objTransform.position, zAxisAfterLook * 2.0f, Color.blue, 0f, false);
-            Debug.DrawRay (objTransform.position, zAxisHorizontal * 2.0f, Color.cyan, 0f, false);
+            // 水平方向のみの成分にする(upwardsに垂直なベクトルにする)
+            Vector3 zAxisHorizontal = new Vector3(zAxisAfterLook.x, 0f, zAxisAfterLook.z);            
 
             // 回転後のx軸(赤)を求めるために
             // Look後のz軸(青)の水平成分のみのベクトルを、垂直を軸にして90度回転させる
             Quaternion getXAxisRotationFromZHorizontal = Quaternion.AngleAxis(90, Vector3.up);
             Vector3 xAxisAfterRotate = getXAxisRotationFromZHorizontal.ToUnity() * zAxisHorizontal;
-            // デバッグ
-            Debug.DrawRay(objTransform.position, xAxisAfterRotate * 2.0f, Color.red, 0f, false);
 
             // 回転後のy軸(緑)を求めるために
             // 回転後のx軸(赤)を、Look後のz軸(青)を軸にして90度回転させる
             Quaternion getYAxisRotationFromXAxisAfterRotate = Quaternion.AngleAxis(90, zAxisAfterLook);
             Vector3 yAxisAfterRotate = getYAxisRotationFromXAxisAfterRotate.ToUnity() * xAxisAfterRotate;
 
-            Debug.DrawRay(objTransform.position, yAxisAfterRotate * 2.0f, Color.green, 0f, false);
-
             // Look後のy軸(緑) から 回転後のy軸(緑) へ修正する回転を求める
             Vector3 yAxisBeforeModify = lookRotation.ToUnity() * Vector3.up;
             Quaternion modifyRotation = Quaternion.FromToRotation(yAxisBeforeModify, yAxisAfterRotate);
 
-            return modifyRotation * lookRotation;
+            // デバッグ
+            //Debug.DrawRay(objTransform.position, zAxisAfterLook * 2.0f, Color.blue, 0f, false);
+            //Debug.DrawRay(objTransform.position, zAxisHorizontal * 2.0f, Color.cyan, 0f, false);
+            //Debug.DrawRay(objTransform.position, xAxisAfterRotate * 2.0f, Color.red, 0f, false);
+            //Debug.DrawRay(objTransform.position, yAxisAfterRotate * 2.0f, Color.green, 0f, false);
+
+            // 回転を合成して返す
+            return modifyRotation * lookRotation;   
         }
 
         // fromDirection から toDirection への回転を作成して返す
@@ -204,9 +210,18 @@ namespace FThingSoftware
         }
 
         // UnityEngine.Quaternionに変換する
-        public UnityEngine.Quaternion ToUnity()
+        // Vector3クラスに回転を適用できるようにする
+        private UnityEngine.Quaternion ToUnity()
         {
             return new UnityEngine.Quaternion(this.x, this.y, this.z, this.w);
+        }
+
+        // 暗黙的な型変換演算子の定義
+        // UnityEngine.Quaternionに自動的に変換して
+        // transform.rotation = Quaternion; ができるようにする
+        public static implicit operator UnityEngine.Quaternion(Quaternion quaternion)
+        {
+            return new UnityEngine.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
         }
 
         // 演算子オーバーロードを用いて、クォータニオン同士の乗算と比較ができるようにする
