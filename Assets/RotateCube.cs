@@ -100,9 +100,17 @@ public class RotateCube : MonoBehaviour
         //    );
         //Debug.Log((angle_1, angle_2));
 
+
         // Test Euler
+        //unityQuaternion = Quaternion.Euler(20, 45, 175);
+        //originalQuaternion = FThingSoftware.Quaternion.Euler(20, 45, 175);
+        //Debug.Log((unityQuaternion.ToString(), originalQuaternion.ToString()));
+
+
+        // Test Inverse
         unityQuaternion = Quaternion.Euler(20, 45, 175);
         originalQuaternion = FThingSoftware.Quaternion.Euler(20, 45, 175);
-        Debug.Log((unityQuaternion.ToString(), originalQuaternion.ToString()));
+        Debug.Log(Quaternion.Inverse(unityQuaternion));
+        Debug.Log(FThingSoftware.Quaternion.Inverse(originalQuaternion));
     }
 }
