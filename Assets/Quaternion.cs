@@ -238,22 +238,22 @@ namespace FThingSoftware
             Quaternion lookRotation = FromToRotation(Vector3.forward, forward);
 
             // Look後のz軸(青)を求める
-            Vector3 zAxisAfterLook = lookRotation.ToUnity() * Vector3.forward;
+            Vector3 zAxisAfterLook = lookRotation * Vector3.forward;
             // 水平方向のみの成分にする(upwardsに垂直なベクトルにする)
             Vector3 zAxisHorizontal = new Vector3(zAxisAfterLook.x, 0f, zAxisAfterLook.z);            
 
             // 回転後のx軸(赤)を求めるために
             // Look後のz軸(青)の水平成分のみのベクトルを、垂直を軸にして90度回転させる
             Quaternion getXAxisRotationFromZHorizontal = Quaternion.AngleAxis(90, Vector3.up);
-            Vector3 xAxisAfterRotate = getXAxisRotationFromZHorizontal.ToUnity() * zAxisHorizontal;
+            Vector3 xAxisAfterRotate = getXAxisRotationFromZHorizontal * zAxisHorizontal;
 
             // 回転後のy軸(緑)を求めるために
             // 回転後のx軸(赤)を、Look後のz軸(青)を軸にして90度回転させる
             Quaternion getYAxisRotationFromXAxisAfterRotate = Quaternion.AngleAxis(90, zAxisAfterLook);
-            Vector3 yAxisAfterRotate = getYAxisRotationFromXAxisAfterRotate.ToUnity() * xAxisAfterRotate;
+            Vector3 yAxisAfterRotate = getYAxisRotationFromXAxisAfterRotate * xAxisAfterRotate;
 
             // Look後のy軸(緑) から 回転後のy軸(緑) へ修正する回転を求める
-            Vector3 yAxisBeforeModify = lookRotation.ToUnity() * Vector3.up;
+            Vector3 yAxisBeforeModify = lookRotation * Vector3.up;
             Quaternion modifyRotation = Quaternion.FromToRotation(yAxisBeforeModify, yAxisAfterRotate);
 
             // 回転を合成して返す
@@ -275,13 +275,6 @@ namespace FThingSoftware
             this = Normalize(this);
         }
 
-        // UnityEngine.Quaternionに変換する
-        // Vector3クラスに回転を適用できるようにする
-        private UnityEngine.Quaternion ToUnity()
-        {
-            return new UnityEngine.Quaternion(this.x, this.y, this.z, this.w);
-        }
-
         // ===============================
         // Operator
         // ===============================
@@ -294,7 +287,8 @@ namespace FThingSoftware
             return new UnityEngine.Quaternion(q.x, q.y, q.z, q.w);
         }
 
-        // 演算子オーバーロードを用いて、クォータニオン同士の乗算と比較ができるようにする
+        // 演算子オーバーロードを用いて
+        // クォータニオン同士の乗算ができるようにする
         public static Quaternion operator * (Quaternion a, Quaternion b)
         {
             return new Quaternion(
@@ -303,6 +297,20 @@ namespace FThingSoftware
                 -a.y*b.x + a.x*b.y + a.w*b.z + a.z*b.w,
                 -a.x*b.x - a.y*b.y - a.z*b.z + a.w*b.w
             );
+        }
+
+        // 演算子オーバーロードを用いて
+        // Quaternion * Vector3 が計算できるようにする
+        public static Vector3 operator * (Quaternion q, Vector3 v)
+        {
+            // 回転後のベクトルv'について
+            // v' = q * v * q_inverse となる
+            // 3次元座標をクォータニオンで表す
+            Quaternion vecQuaternion = new Quaternion(v.x, v.y, v.z, 0);
+            // ベクトルに回転を施す
+            Quaternion vecAfterRotate = q * vecQuaternion * Quaternion.Inverse(q);
+            // クォータニオンを3次元座標に変換する
+            return new Vector3(vecAfterRotate.x, vecAfterRotate.y, vecAfterRotate.z);
         }
 
         // 比較(Unityの実装を引用)

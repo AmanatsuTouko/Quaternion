@@ -56,12 +56,12 @@ public class RotateCube : MonoBehaviour
 
 
         // Test LookRotation
-        //Vector3 look = targetObj.transform.position - this.transform.position;
-        //unityQuaternion = Quaternion.LookRotation(look);
-        //unityObj.transform.rotation = unityQuaternion;
+        Vector3 look = targetObj.transform.position - this.transform.position;
+        unityQuaternion = Quaternion.LookRotation(look);
+        unityObj.transform.rotation = unityQuaternion;
 
-        //originalQuaternion = FThingSoftware.Quaternion.LookRotation(look);
-        //originalObj.transform.rotation = originalQuaternion;
+        originalQuaternion = FThingSoftware.Quaternion.LookRotation(look);
+        originalObj.transform.rotation = originalQuaternion;
 
 
         // Test ToAngleAxis
@@ -108,9 +108,9 @@ public class RotateCube : MonoBehaviour
 
 
         // Test Inverse
-        unityQuaternion = Quaternion.Euler(20, 45, 175);
-        originalQuaternion = FThingSoftware.Quaternion.Euler(20, 45, 175);
-        Debug.Log(Quaternion.Inverse(unityQuaternion));
-        Debug.Log(FThingSoftware.Quaternion.Inverse(originalQuaternion));
+        //unityQuaternion = Quaternion.Euler(20, 45, 175);
+        //originalQuaternion = FThingSoftware.Quaternion.Euler(20, 45, 175);
+        //Debug.Log(Quaternion.Inverse(unityQuaternion));
+        //Debug.Log(FThingSoftware.Quaternion.Inverse(originalQuaternion));
     }
 }
