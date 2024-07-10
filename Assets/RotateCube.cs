@@ -63,9 +63,36 @@ public class RotateCube : MonoBehaviour
         //originalQuaternion = FThingSoftware.Quaternion.LookRotation(look);
         //originalObj.transform.rotation = originalQuaternion;
 
+
         // Test ToAngleAxis
-        Quaternion qua1 = Quaternion.AngleAxis(30, Vector3.up);
-        Quaternion qua2 = Quaternion.AngleAxis(45, Vector3.right);
-        Quaternion qua3 = Quaternion.AngleAxis(90, Vector3.forward);
+        //Quaternion qua1 = Quaternion.AngleAxis(30, Vector3.up);
+        //Quaternion qua2 = Quaternion.AngleAxis(45, Vector3.right);
+        //Quaternion qua3 = Quaternion.AngleAxis(90, Vector3.forward);
+        //unityQuaternion = qua3 * qua2 * qua1;
+
+        //FThingSoftware.Quaternion qua_1 = FThingSoftware.Quaternion.AngleAxis(30, Vector3.up);
+        //FThingSoftware.Quaternion qua_2 = FThingSoftware.Quaternion.AngleAxis(45, Vector3.right);
+        //FThingSoftware.Quaternion qua_3 = FThingSoftware.Quaternion.AngleAxis(90, Vector3.forward);
+        //originalQuaternion = qua_3 * qua_2 * qua_1;
+
+        //float angle = 0;
+        //Vector3 axis = Vector3.zero;
+
+        //unityQuaternion.ToAngleAxis(out angle, out axis);
+        //Debug.Log((angle, axis));
+        //originalQuaternion.ToAngleAxis(out angle, out axis);
+        //Debug.Log((angle, axis));
+
+
+        // Test ToString
+        //unityQuaternion = Quaternion.identity;
+        //Debug.Log(unityQuaternion.ToString());
+
+        //originalQuaternion = FThingSoftware.Quaternion.identity;
+        //Debug.Log(originalQuaternion.ToString());
+
+        // Test Angle
+        float angle = Quaternion.Angle(Quaternion.AngleAxis(30, Vector3.up), Quaternion.AngleAxis(45, Vector3.up));
+
     }
 }

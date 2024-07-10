@@ -1,6 +1,4 @@
 using System;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace FThingSoftware
@@ -8,13 +6,19 @@ namespace FThingSoftware
     [Serializable]
     public struct Quaternion
     {
+        // ===============================
         // メンバー変数
+        // ===============================
+
         public float x;
         public float y;
         public float z;
         public float w;
 
+        // ===============================
         // コンストラクタ
+        // ===============================
+
         public Quaternion(float x, float y, float z, float w)
         {
             this.x = x;
@@ -23,10 +27,18 @@ namespace FThingSoftware
             this.w = w;
         }
 
+        // ===============================
         // static変数
+        // ===============================
+
         // 無回転のクォータニオン(単位回転)
         public static readonly Quaternion identity = new Quaternion(0f, 0f, 0f, 1f);
 
+        // ===============================
+        // 変数
+        // ===============================
+
+        // オイラー角表現を返したり、代入できるようにする
         public Vector3 eulerAngle
         {
             get
@@ -84,7 +96,10 @@ namespace FThingSoftware
             }
         }
 
+        // ===============================
         // public関数
+        // ===============================
+
         public void Set(float x, float y, float z, float w)
         {
             this.x = x;
@@ -108,11 +123,39 @@ namespace FThingSoftware
         // 回転を座標に対する角度の値(AngleAxis)に変換する
         public void ToAngleAxis(out float angle, out Vector3 axis)
         {
-            angle = 0;
-            axis = Vector3.zero;
+            // クォータニオンの定義より求める
+
+            // cos(rad/2) = w より
+            float rad = Mathf.Acos(w) * 2.0f;
+            angle = rad * Mathf.Rad2Deg;
+
+            // x = axis.x * sin(rad/2), y = axis.y * sin(rad/2), z = axis.z * sin(rad/2)より
+            axis = new Vector3(this.x / Mathf.Sin(rad / 2), this.y / Mathf.Sin(rad / 2), this.z / Mathf.Sin(rad / 2));
         }
 
+        // クォータニオンの値を見やすくした文字列を返す
+        // ToStringメソッドをオーバーライドする
+        public override string ToString()
+        {
+            string format = "F5";
+            return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}, {w.ToString(format)})";
+        }
+
+        // ===============================
         // static関数
+        // ===============================
+
+        //  2つの回転aとb間の角度を返す(Unityの実装を引用)
+        public static float Angle(Quaternion a, Quaternion b)
+        {
+            float num = Mathf.Min(Mathf.Abs(Dot(a, b)), 1f);
+            return IsEqualUsingDot(num) ? 0f : (Mathf.Acos(num) * 2f * Mathf.Rad2Deg);            
+        }
+        private static bool IsEqualUsingDot(float dot)
+        {
+            return dot > 0.999999f;
+        }
+
         // axisの周りをangle度回転する回転を生成して返す
         public static Quaternion AngleAxis(float angle, Vector3 axis)
         {
@@ -216,12 +259,16 @@ namespace FThingSoftware
             return new UnityEngine.Quaternion(this.x, this.y, this.z, this.w);
         }
 
+        // ===============================
+        // Operator
+        // ===============================
+
         // 暗黙的な型変換演算子の定義
         // UnityEngine.Quaternionに自動的に変換して
         // transform.rotation = Quaternion; ができるようにする
-        public static implicit operator UnityEngine.Quaternion(Quaternion quaternion)
+        public static implicit operator UnityEngine.Quaternion(Quaternion q)
         {
-            return new UnityEngine.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+            return new UnityEngine.Quaternion(q.x, q.y, q.z, q.w);
         }
 
         // 演算子オーバーロードを用いて、クォータニオン同士の乗算と比較ができるようにする
