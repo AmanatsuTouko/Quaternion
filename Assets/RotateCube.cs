@@ -91,8 +91,18 @@ public class RotateCube : MonoBehaviour
         //originalQuaternion = FThingSoftware.Quaternion.identity;
         //Debug.Log(originalQuaternion.ToString());
 
-        // Test Angle
-        float angle = Quaternion.Angle(Quaternion.AngleAxis(30, Vector3.up), Quaternion.AngleAxis(45, Vector3.up));
 
+        // Test Angle
+        //float angle_1 = Quaternion.Angle(Quaternion.AngleAxis(30, Vector3.up), Quaternion.AngleAxis(45, Vector3.up));
+        //float angle_2 = FThingSoftware.Quaternion.Angle(
+        //    FThingSoftware.Quaternion.AngleAxis(30, Vector3.up),
+        //    FThingSoftware.Quaternion.AngleAxis(45, Vector3.up)
+        //    );
+        //Debug.Log((angle_1, angle_2));
+
+        // Test Euler
+        unityQuaternion = Quaternion.Euler(20, 45, 175);
+        originalQuaternion = FThingSoftware.Quaternion.Euler(20, 45, 175);
+        Debug.Log((unityQuaternion.ToString(), originalQuaternion.ToString()));
     }
 }

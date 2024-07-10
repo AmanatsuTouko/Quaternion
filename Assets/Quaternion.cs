@@ -74,16 +74,10 @@ namespace FThingSoftware
                 return new Vector3(Math.Abs(angle_x), Math.Abs(angle_y), Math.Abs(angle_z));
             }
 
-            // オイラー角を代入して回転できるようにする            
-            // z-x-y系なので、z-x-yの順番で回転させる
+            // オイラー角を代入して回転できるようにする
             set
             {
-                // それぞれの軸を中心とした回転を生成
-                Quaternion qua_x = AngleAxis(value.x, Vector3.right);
-                Quaternion qua_y = AngleAxis(value.y, Vector3.up);
-                Quaternion qua_z = AngleAxis(value.z, Vector3.forward);
-                // クォータニオンの乗算を行う(右から掛けていく)
-                this = qua_y * qua_x * qua_z;
+                this = Euler(value.x, value.y, value.z);
             }
         }
 
@@ -148,8 +142,9 @@ namespace FThingSoftware
         //  2つの回転aとb間の角度を返す(Unityの実装を引用)
         public static float Angle(Quaternion a, Quaternion b)
         {
-            float num = Mathf.Min(Mathf.Abs(Dot(a, b)), 1f);
-            return IsEqualUsingDot(num) ? 0f : (Mathf.Acos(num) * 2f * Mathf.Rad2Deg);            
+            // a・b = cos(θ/2) となることを利用する
+            float dot = Mathf.Min(Mathf.Abs(Dot(a, b)), 1f);
+            return IsEqualUsingDot(dot) ? 0f : (Mathf.Acos(dot) * 2f * Mathf.Rad2Deg);            
         }
         private static bool IsEqualUsingDot(float dot)
         {
@@ -183,6 +178,18 @@ namespace FThingSoftware
             return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
         }
 
+        // z軸を中心にz度、x軸を中心にx度、y軸を中心にy度回転する回転を返す。回転はこの順序で適用される
+        public static Quaternion Euler(float x, float y, float z)
+        {
+            // それぞれの軸を中心とした回転を生成
+            Quaternion qua_x = AngleAxis(x, Vector3.right);
+            Quaternion qua_y = AngleAxis(y, Vector3.up);
+            Quaternion qua_z = AngleAxis(z, Vector3.forward);
+
+            // z-x-y系なので、z-x-yの順番で回転させる
+            // クォータニオンの乗算を行う(右から掛けていく)
+            return qua_y * qua_x * qua_z;
+        }
 
         public static Quaternion LookRotation(Vector3 forward)
         {
