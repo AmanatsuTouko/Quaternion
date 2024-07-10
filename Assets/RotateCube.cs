@@ -60,11 +60,9 @@ public class RotateCube : MonoBehaviour
         // Test LookRotation
         Vector3 look = targetObj.transform.position - this.transform.position;
         unityQuaternion = Quaternion.LookRotation(look);
-        //unityQuaternion = Quaternion.FromToRotation(Vector3.forward, look);
         unityObj.transform.rotation = unityQuaternion;
 
         originalQuaternion = FThingSoftware.Quaternion.LookRotation(look, Vector3.up, originalObj.transform);
-        //originalQuaternion = FThingSoftware.Quaternion.FromToRotation(Vector3.forward, look);
         originalObj.transform.rotation = originalQuaternion.ToUnity();
     }
 }
