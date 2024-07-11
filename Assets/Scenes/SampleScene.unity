@@ -283,10 +283,16 @@ MonoBehaviour:
     y: 0
     z: 0
     w: 0
+  testPattern: 2
   angle: 0
   axis: {x: 0, y: 0, z: 0}
   fromDirection: {x: 0, y: 0, z: 0}
   toDirection: {x: 0, y: 0, z: 0}
+  t: 0
+  fromAngle: 0
+  fromAxis: {x: 0, y: 0, z: 0}
+  toAngle: 0
+  toAxis: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

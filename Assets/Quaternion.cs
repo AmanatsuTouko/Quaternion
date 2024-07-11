@@ -216,9 +216,25 @@ namespace FThingSoftware
         // aとbの間をtで補間して正規化する、tは[0,1]の範囲
         public static Quaternion Lerp(Quaternion a, Quaternion b, float t)
         {
-            // aからbへの回転の軸を求める
+            // tの範囲の制限
+            t = Mathf.Clamp01(t);
 
-            return Quaternion.identity;
+            // 2つの回転の内積を求める
+            float dot = Dot(a, b);
+            // 内積が負の場合、距離最小性を満たす道筋のうち、短い道筋にするために片方のクォータニオンを負にする
+            if (dot < 0)
+            {
+                b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
+            }
+
+            // 直線経路で補完する a*(1-t) + b*t
+            Quaternion lerp = new Quaternion(
+                    a.x + (-a.x + b.x) * t,
+                    a.y + (-a.y + b.y) * t,
+                    a.z + (-a.z + b.z) * t,
+                    a.w + (-a.w + b.w) * t
+                );
+            return lerp.normalized;
         }
 
         // aとbの間をtで補間して正規化する、tは[0,1]の範囲にクランプされない
@@ -227,13 +243,9 @@ namespace FThingSoftware
             return Quaternion.identity;
         }
 
-
-
+        // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
         public static Quaternion LookRotation(Vector3 forward)
         {
-            // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
-            // upwardsがどの軸を上にするかを指定する
-
             // オブジェクトの正面からforwardに向ける回転を取得
             Quaternion lookRotation = FromToRotation(Vector3.forward, forward);
 
@@ -273,6 +285,110 @@ namespace FThingSoftware
         public void Normalize()
         {
             this = Normalize(this);
+        }
+
+        // fromからtoへの回転を得る
+        public static Quaternion RotateTowards(Quaternion from, Quaternion to, float maxDegreesDelta)
+        {
+            return Quaternion.identity;
+        }
+
+        // 球面線形補完を得る、tは[0,1]の範囲
+        public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
+        {
+            // tの範囲の制限
+            t = Mathf.Clamp01(t);
+
+            // 2つの回転の内積を求める
+            float dot = Dot(a, b);
+            // 内積が負の場合、距離最小性を満たす道筋のうち、短い道筋にするために片方のクォータニオンを負にする
+            if (dot < 0)
+            {
+                b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
+            }
+
+            // 2つの回転の角度を求める
+            float rad = Angle(a, b) * Mathf.Deg2Rad;
+
+            // 球面線形補完
+            float bottom = Mathf.Sin(rad);
+            float a_rate = Mathf.Sin((1 - t) * rad) / bottom;
+            float b_rate = Mathf.Sin(t * rad) / bottom;
+
+            Quaternion slerp = new Quaternion(
+                    a.x * a_rate + b.x * b_rate,
+                    a.y * a_rate + b.y * b_rate,
+                    a.z * a_rate + b.z * b_rate,
+                    a.w * a_rate + b.w * b_rate
+                );
+
+            return slerp.normalized;
+        }
+
+        // 球面四角形補間（Spherical and Quadrangle Interpolation）
+        public static Quaternion Squad(Quaternion q0, Quaternion q1, float t)
+        {
+            // 中間クォータニオンを計算
+            Quaternion q0Prime = GetIntermediate(q0, q1);
+            Quaternion q1Prime = GetIntermediate(q1, q0);
+
+            Quaternion slerp0 = Slerp(q0, q1Prime, t);
+            Quaternion slerp1 = Slerp(q0Prime, q1, t);
+
+            return Slerp(slerp0, slerp1, t);
+        }
+
+        // 中間クォータニオンを計算するメソッド
+        private static Quaternion GetIntermediate(Quaternion q0, Quaternion q1)
+        {
+            float dot = Dot(q0, q1);
+            if (dot < 0)
+            {
+                q1 = new Quaternion(-q1.x, -q1.y, -q1.z, -q1.w);
+            }
+
+            Quaternion logDiff = Log(Quaternion.Inverse(q0) * q1);
+            logDiff = new Quaternion(
+                logDiff.x * 0.5f,
+                logDiff.y * 0.5f,
+                logDiff.z * 0.5f,
+                logDiff.w * 0.5f
+                );
+            return q0 * Exp(logDiff);
+        }
+
+        // クォータニオンの指数関数
+        private static Quaternion Exp(Quaternion q)
+        {
+            float a = q.w;
+            Vector3 v = new Vector3(q.x, q.y, q.z);
+
+            float expW = Mathf.Exp(a);
+            float sinNormV = Mathf.Sin(v.magnitude);
+
+            return new Quaternion(expW * v.x * sinNormV, expW * v.y * sinNormV, expW * v.z * sinNormV, expW * Mathf.Cos(v.magnitude));
+        }
+
+        // クォータニオンの対数関数
+        private static Quaternion Log(Quaternion q)
+        {
+            float a = Mathf.Acos(q.w);
+            float sinA = Mathf.Sin(a);
+
+            if (Mathf.Abs(sinA) < 0.001f)
+            {
+                return new Quaternion(q.x, q.y, q.z, 0f);
+            }
+            else
+            {
+                return new Quaternion(q.x * a / sinA, q.y * a / sinA, q.z * a / sinA, 0f);
+            }
+        }
+
+        // 球面線形補完を得る、tは[0,1]の範囲にクランプされない
+        public static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t)
+        {
+            return Quaternion.identity;
         }
 
         // ===============================
