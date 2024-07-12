@@ -71,7 +71,8 @@ namespace FThingSoftware
                     angle_z = Mathf.Atan2(z_top, z_bottom) * Mathf.Rad2Deg;
                 }
 
-                return new Vector3(Math.Abs(angle_x), Math.Abs(angle_y), Math.Abs(angle_z));
+                // 角度の範囲を0~360の範囲に補正する
+                return MakePositive(new Vector3(angle_x, angle_y, angle_z));
             }
 
             // オイラー角を代入して回転できるようにする
@@ -79,6 +80,24 @@ namespace FThingSoftware
             {
                 this = Euler(value.x, value.y, value.z);
             }
+        }
+
+        // 0 ~ 360度の範囲に補正する
+        private static Vector3 MakePositive(Vector3 euler)
+        {
+            float min = 0f;
+            float max = 360f;
+
+            if (euler.x < min) { euler.x += 360f; }
+            else if (euler.x > max) { euler.x -= 360f; }
+
+            if (euler.y < min) { euler.y += 360f; }
+            else if (euler.y > max) { euler.y -= 360f; }
+
+            if (euler.z < min) { euler.z += 360f; }
+            else if (euler.z > max) { euler.z -= 360f; }
+
+            return euler;
         }
 
         // 正規化したクォータニオンを返す
@@ -221,7 +240,8 @@ namespace FThingSoftware
 
             // 2つの回転の内積を求める
             float dot = Dot(a, b);
-            // 内積が負の場合、距離最小性を満たす道筋のうち、短い道筋にするために片方のクォータニオンを負にする
+            // 内積が負の場合、距離最小性を満たす道筋のうち
+            // 短い道筋にするために片方のクォータニオンの成分を負にする
             if (dot < 0)
             {
                 b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
@@ -282,6 +302,7 @@ namespace FThingSoftware
             }
             return new Quaternion(q.x / num, q.y / num, q.z / num, q.w / num);
         }
+
         public void Normalize()
         {
             this = Normalize(this);
