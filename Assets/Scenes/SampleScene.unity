@@ -283,12 +283,13 @@ MonoBehaviour:
     y: 0
     z: 0
     w: 0
-  testPattern: 2
+  testPattern: 7
   angle: 0
   axis: {x: 0, y: 0, z: 0}
   fromDirection: {x: 0, y: 0, z: 0}
   toDirection: {x: 0, y: 0, z: 0}
   t: 0
+  t_unclamped: 0
   fromAngle: 0
   fromAxis: {x: 0, y: 0, z: 0}
   toAngle: 0

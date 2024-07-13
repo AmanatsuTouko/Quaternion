@@ -237,11 +237,15 @@ namespace FThingSoftware
         {
             // tの範囲の制限
             t = Mathf.Clamp01(t);
+            return LerpUnclamped(a, b, t);
+        }
 
+        // aとbの間をtで補間して正規化する、tは[0,1]の範囲にクランプされない
+        public static Quaternion LerpUnclamped(Quaternion a, Quaternion b, float t)
+        {
             // 2つの回転の内積を求める
             float dot = Dot(a, b);
-            // 内積が負の場合、距離最小性を満たす道筋のうち
-            // 短い道筋にするために片方のクォータニオンの成分を負にする
+            // 内積が負の時、最短距離での補間を得るために片方を負にする
             if (dot < 0)
             {
                 b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
@@ -255,12 +259,6 @@ namespace FThingSoftware
                     a.w + (-a.w + b.w) * t
                 );
             return lerp.normalized;
-        }
-
-        // aとbの間をtで補間して正規化する、tは[0,1]の範囲にクランプされない
-        public static Quaternion LerpUnclamped(Quaternion a, Quaternion b, float t)
-        {
-            return Quaternion.identity;
         }
 
         // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
@@ -308,10 +306,15 @@ namespace FThingSoftware
             this = Normalize(this);
         }
 
-        // fromからtoへの回転を得る
+        // fromからtoへの回転を得る(Unityの実装を引用)
         public static Quaternion RotateTowards(Quaternion from, Quaternion to, float maxDegreesDelta)
         {
-            return Quaternion.identity;
+            float num = Angle(from, to);
+            if (num == 0f)
+            {
+                return to;
+            }
+            return SlerpUnclamped(from, to, Mathf.Min(1f, maxDegreesDelta / num));
         }
 
         // 球面線形補完を得る、tは[0,1]の範囲
@@ -319,10 +322,15 @@ namespace FThingSoftware
         {
             // tの範囲の制限
             t = Mathf.Clamp01(t);
+            return SlerpUnclamped(a, b, t);
+        }
 
+        // 球面線形補完を得る、tは[0,1]の範囲にクランプされない
+        public static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t)
+        {
             // 2つの回転の内積を求める
             float dot = Dot(a, b);
-            // 内積が負の場合、距離最小性を満たす道筋のうち、短い道筋にするために片方のクォータニオンを負にする
+            // 内積が負の時、最短距離での補間を得るために片方を負にする
             if (dot < 0)
             {
                 b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
@@ -349,14 +357,23 @@ namespace FThingSoftware
         // 球面四角形補間（Spherical and Quadrangle Interpolation）
         public static Quaternion Squad(Quaternion q0, Quaternion q1, float t)
         {
+            t = Mathf.Clamp01(t);
+            return SquadUnclamped(q0, q1, t);
+
+        }
+
+        // 球面四角形補間（Spherical and Quadrangle Interpolation）
+        // tは[0,1]の範囲にクランプされない
+        public static Quaternion SquadUnclamped(Quaternion q0, Quaternion q1, float t)
+        {
             // 中間クォータニオンを計算
             Quaternion q0Prime = GetIntermediate(q0, q1);
             Quaternion q1Prime = GetIntermediate(q1, q0);
 
-            Quaternion slerp0 = Slerp(q0, q1Prime, t);
-            Quaternion slerp1 = Slerp(q0Prime, q1, t);
+            Quaternion slerp0 = SlerpUnclamped(q0, q1Prime, t);
+            Quaternion slerp1 = SlerpUnclamped(q0Prime, q1, t);
 
-            return Slerp(slerp0, slerp1, t);
+            return SlerpUnclamped(slerp0, slerp1, t);
         }
 
         // 中間クォータニオンを計算するメソッド
@@ -404,12 +421,6 @@ namespace FThingSoftware
             {
                 return new Quaternion(q.x * a / sinA, q.y * a / sinA, q.z * a / sinA, 0f);
             }
-        }
-
-        // 球面線形補完を得る、tは[0,1]の範囲にクランプされない
-        public static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t)
-        {
-            return Quaternion.identity;
         }
 
         // ===============================
