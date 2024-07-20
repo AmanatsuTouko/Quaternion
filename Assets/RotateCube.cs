@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RotateCube : MonoBehaviour
 {
     public GameObject unityObj;
     public GameObject originalObj;
-
     public GameObject targetObj;
 
     public Quaternion unityQuaternion;
@@ -21,11 +18,7 @@ public class RotateCube : MonoBehaviour
         LERP_UNCLAMPED,
         SLERP,
         SLERP_UNCLAMPED,
-        SQUAD,
-        SQUAD_UNCLAMPED,
-
         ROTATE_TOWARDS,
-
         LOOK_ROTATION,
     }
 
@@ -52,9 +45,7 @@ public class RotateCube : MonoBehaviour
     {
         fromAngle = 30;
         fromAxis = new Vector3(0, 1, 0);
-        //toAngle = 270;
-        //toAxis = new Vector3(1, 0, 1);
-        toAngle = 200;
+        toAngle = 270;
         toAxis = new Vector3(0, 1, 0);
 
         FThingSoftware.Quaternion quaternion_1 = FThingSoftware.Quaternion.AngleAxis(270, new Vector3(1, 0, 1));
@@ -140,36 +131,6 @@ public class RotateCube : MonoBehaviour
                     FThingSoftware.Quaternion fromRotation_2 = FThingSoftware.Quaternion.AngleAxis(fromAngle, fromAxis);
                     FThingSoftware.Quaternion toRotation_2 = FThingSoftware.Quaternion.AngleAxis(toAngle, toAxis);
                     FThingSoftware.Quaternion lerp_2 = FThingSoftware.Quaternion.SlerpUnclamped(fromRotation_2, toRotation_2, t_unclamped);
-                    originalObj.transform.rotation = lerp_2;
-                }
-                break;
-
-            case TestPattern.SQUAD:
-                // Inspector の Lerp/Slerp の項目を変更してテストする
-                {
-                    Quaternion fromRotation_1 = Quaternion.AngleAxis(fromAngle, fromAxis);
-                    Quaternion toRotation_1 = Quaternion.AngleAxis(toAngle, toAxis);
-                    Quaternion lerp_1 = Quaternion.Slerp(fromRotation_1, toRotation_1, t);
-                    unityObj.transform.rotation = lerp_1;
-
-                    FThingSoftware.Quaternion fromRotation_2 = FThingSoftware.Quaternion.AngleAxis(fromAngle, fromAxis);
-                    FThingSoftware.Quaternion toRotation_2 = FThingSoftware.Quaternion.AngleAxis(toAngle, toAxis);
-                    FThingSoftware.Quaternion lerp_2 = FThingSoftware.Quaternion.Squad(fromRotation_2, toRotation_2, t);
-                    originalObj.transform.rotation = lerp_2;
-                }
-                break;
-
-            case TestPattern.SQUAD_UNCLAMPED:
-                // Inspector の Lerp/Slerp の項目を変更してテストする
-                {
-                    Quaternion fromRotation_1 = Quaternion.AngleAxis(fromAngle, fromAxis);
-                    Quaternion toRotation_1 = Quaternion.AngleAxis(toAngle, toAxis);
-                    Quaternion lerp_1 = Quaternion.SlerpUnclamped(fromRotation_1, toRotation_1, t_unclamped);
-                    unityObj.transform.rotation = lerp_1;
-
-                    FThingSoftware.Quaternion fromRotation_2 = FThingSoftware.Quaternion.AngleAxis(fromAngle, fromAxis);
-                    FThingSoftware.Quaternion toRotation_2 = FThingSoftware.Quaternion.AngleAxis(toAngle, toAxis);
-                    FThingSoftware.Quaternion lerp_2 = FThingSoftware.Quaternion.SquadUnclamped(fromRotation_2, toRotation_2, t_unclamped);
                     originalObj.transform.rotation = lerp_2;
                 }
                 break;
