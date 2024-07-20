@@ -10,7 +10,7 @@ public class RotateCube : MonoBehaviour
     public GameObject targetObj;
 
     public Quaternion unityQuaternion;
-    public FThingSoftware.Quaternion originalQuaternion;
+    public Quaternion originalQuaternion;
 
     [Header("Test")]
     [SerializeField] TestPattern testPattern = TestPattern.SLERP;
@@ -25,6 +25,8 @@ public class RotateCube : MonoBehaviour
         SQUAD_UNCLAMPED,
 
         ROTATE_TOWARDS,
+
+        LOOK_ROTATION,
     }
 
     [Header("AngleAxis")]
@@ -176,15 +178,30 @@ public class RotateCube : MonoBehaviour
                 {
                     var step = 1.0f * Time.deltaTime;
 
-                    Quaternion fromRotation_1 = Quaternion.AngleAxis(fromAngle, fromAxis);
                     Quaternion toRotation_1 = Quaternion.AngleAxis(toAngle, toAxis);
-                    Quaternion lerp_1 = Quaternion.RotateTowards(fromRotation_1, toRotation_1, step);
+                    Quaternion lerp_1 = Quaternion.RotateTowards(unityObj.transform.rotation, toRotation_1, step);
                     unityObj.transform.rotation = lerp_1;
 
-                    FThingSoftware.Quaternion fromRotation_2 = FThingSoftware.Quaternion.AngleAxis(fromAngle, fromAxis);
+                    FThingSoftware.Quaternion fromRotation_2 = new FThingSoftware.Quaternion(
+                            originalObj.transform.rotation.x,
+                            originalObj.transform.rotation.y,
+                            originalObj.transform.rotation.z,
+                            originalObj.transform.rotation.w
+                        );
                     FThingSoftware.Quaternion toRotation_2 = FThingSoftware.Quaternion.AngleAxis(toAngle, toAxis);
                     FThingSoftware.Quaternion lerp_2 = FThingSoftware.Quaternion.RotateTowards(fromRotation_2, toRotation_2, step);
                     originalObj.transform.rotation = lerp_2;
+                }
+                break;
+
+            case TestPattern.LOOK_ROTATION:
+                {
+                    Vector3 lookDirection = targetObj.transform.position - this.transform.position;
+                    unityQuaternion = Quaternion.LookRotation(lookDirection);
+                    unityObj.transform.rotation = unityQuaternion;
+
+                    originalQuaternion = FThingSoftware.Quaternion.LookRotation(lookDirection, originalObj.transform);
+                    originalObj.transform.rotation = originalQuaternion;
                 }
                 break;
         }
@@ -215,16 +232,6 @@ public class RotateCube : MonoBehaviour
 
         //originalQuaternion.eulerAngle = axis;
         //originalObj.transform.rotation = originalQuaternion;
-
-
-        // Test LookRotation
-        //Vector3 look = targetObj.transform.position - this.transform.position;
-        //unityQuaternion = Quaternion.LookRotation(look);
-        //unityObj.transform.rotation = unityQuaternion;
-
-        //originalQuaternion = FThingSoftware.Quaternion.LookRotation(look);
-        //originalObj.transform.rotation = originalQuaternion;
-
 
         // Test ToAngleAxis
         //Quaternion qua1 = Quaternion.AngleAxis(30, Vector3.up);

@@ -39,7 +39,7 @@ namespace FThingSoftware
         // ===============================
 
         // オイラー角表現を返したり、代入できるようにする
-        public Vector3 eulerAngle
+        public Vector3 eulerAngles
         {
             get
             {
@@ -121,7 +121,7 @@ namespace FThingSoftware
             this.w = w;
         }
 
-        // fromDirectionからtoDirectionへの回転を作成する
+        // fromDirectionからtoDirectionへの回転を作成して代入する
         public void SetFromToRotation(Vector3 fromDirection, Vector3 toDirection)
         {
             this = FromToRotation(fromDirection, toDirection);
@@ -130,7 +130,7 @@ namespace FThingSoftware
         // 指定した forward と upwards 方向に回転する
         public void SetLookRotation(Vector3 view)
         {
-            this = LookRotation(view);
+            // this = LookRotation(view);
         }
 
         // 回転を座標に対する角度の値(AngleAxis)に変換する
@@ -262,7 +262,7 @@ namespace FThingSoftware
         }
 
         // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
-        public static Quaternion LookRotation(Vector3 forward)
+        public static Quaternion LookRotation(Vector3 forward, Transform objTransform)
         {
             // オブジェクトの正面からforwardに向ける回転を取得
             Quaternion lookRotation = FromToRotation(Vector3.forward, forward);
@@ -270,7 +270,7 @@ namespace FThingSoftware
             // Look後のz軸(青)を求める
             Vector3 zAxisAfterLook = lookRotation * Vector3.forward;
             // 水平方向のみの成分にする(upwardsに垂直なベクトルにする)
-            Vector3 zAxisHorizontal = new Vector3(zAxisAfterLook.x, 0f, zAxisAfterLook.z);            
+            Vector3 zAxisHorizontal = new Vector3(zAxisAfterLook.x, 0f, zAxisAfterLook.z);
 
             // 回転後のx軸(赤)を求めるために
             // Look後のz軸(青)の水平成分のみのベクトルを、垂直を軸にして90度回転させる
@@ -287,7 +287,7 @@ namespace FThingSoftware
             Quaternion modifyRotation = Quaternion.FromToRotation(yAxisBeforeModify, yAxisAfterRotate);
 
             // 回転を合成して返す
-            return modifyRotation * lookRotation;   
+            return modifyRotation * lookRotation;
         }
 
         // 正規化を行ったものを返す(Unityの実装を引用)
@@ -314,7 +314,7 @@ namespace FThingSoftware
             {
                 return to;
             }
-            return SlerpUnclamped(from, to, Mathf.Min(1f, maxDegreesDelta / num));
+            return Slerp(from, to, Mathf.Min(1f, maxDegreesDelta / num));
         }
 
         // 球面線形補完を得る、tは[0,1]の範囲
@@ -337,7 +337,7 @@ namespace FThingSoftware
             }
 
             // 2つの回転の角度を求める
-            float rad = Angle(a, b) * Mathf.Deg2Rad;
+            float rad = IsEqualUsingDot(dot) ? 0f : Mathf.Acos(dot);
 
             // 球面線形補完
             float bottom = Mathf.Sin(rad);
@@ -355,72 +355,21 @@ namespace FThingSoftware
         }
 
         // 球面四角形補間（Spherical and Quadrangle Interpolation）
-        public static Quaternion Squad(Quaternion q0, Quaternion q1, float t)
+        // 4つのクォータニオンを補間する
+        // tは[0,1]の範囲でクランプされる
+        public static Quaternion Squad(Quaternion q1, Quaternion q2, Quaternion a, Quaternion b, float t)
         {
             t = Mathf.Clamp01(t);
-            return SquadUnclamped(q0, q1, t);
-
+            return SquadUnclamped(q1, q2, a, b, t);
         }
 
         // 球面四角形補間（Spherical and Quadrangle Interpolation）
         // tは[0,1]の範囲にクランプされない
-        public static Quaternion SquadUnclamped(Quaternion q0, Quaternion q1, float t)
+        public static Quaternion SquadUnclamped(Quaternion q1, Quaternion q2, Quaternion a, Quaternion b, float t)
         {
-            // 中間クォータニオンを計算
-            Quaternion q0Prime = GetIntermediate(q0, q1);
-            Quaternion q1Prime = GetIntermediate(q1, q0);
-
-            Quaternion slerp0 = SlerpUnclamped(q0, q1Prime, t);
-            Quaternion slerp1 = SlerpUnclamped(q0Prime, q1, t);
-
-            return SlerpUnclamped(slerp0, slerp1, t);
-        }
-
-        // 中間クォータニオンを計算するメソッド
-        private static Quaternion GetIntermediate(Quaternion q0, Quaternion q1)
-        {
-            float dot = Dot(q0, q1);
-            if (dot < 0)
-            {
-                q1 = new Quaternion(-q1.x, -q1.y, -q1.z, -q1.w);
-            }
-
-            Quaternion logDiff = Log(Quaternion.Inverse(q0) * q1);
-            logDiff = new Quaternion(
-                logDiff.x * 0.5f,
-                logDiff.y * 0.5f,
-                logDiff.z * 0.5f,
-                logDiff.w * 0.5f
-                );
-            return q0 * Exp(logDiff);
-        }
-
-        // クォータニオンの指数関数
-        private static Quaternion Exp(Quaternion q)
-        {
-            float a = q.w;
-            Vector3 v = new Vector3(q.x, q.y, q.z);
-
-            float expW = Mathf.Exp(a);
-            float sinNormV = Mathf.Sin(v.magnitude);
-
-            return new Quaternion(expW * v.x * sinNormV, expW * v.y * sinNormV, expW * v.z * sinNormV, expW * Mathf.Cos(v.magnitude));
-        }
-
-        // クォータニオンの対数関数
-        private static Quaternion Log(Quaternion q)
-        {
-            float a = Mathf.Acos(q.w);
-            float sinA = Mathf.Sin(a);
-
-            if (Mathf.Abs(sinA) < 0.001f)
-            {
-                return new Quaternion(q.x, q.y, q.z, 0f);
-            }
-            else
-            {
-                return new Quaternion(q.x * a / sinA, q.y * a / sinA, q.z * a / sinA, 0f);
-            }
+            Quaternion slerp1 = Slerp(q1, q2, t);
+            Quaternion slerp2 = Slerp(a, b, t);
+            return Slerp(slerp1, slerp2, 2 * t * (1 - t));
         }
 
         // ===============================
