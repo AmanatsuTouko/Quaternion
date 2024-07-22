@@ -279,7 +279,7 @@ MonoBehaviour:
   targetObj: {fileID: 1943906135}
   unityQuaternion: {x: 0, y: 0, z: 0, w: 0}
   originalQuaternion: {x: 0, y: 0, z: 0, w: 0}
-  testPattern: 4
+  testPattern: 2
   angle: 0
   axis: {x: 0, y: 0, z: 0}
   fromDirection: {x: 0, y: 0, z: 0}
