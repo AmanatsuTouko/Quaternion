@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 namespace FThingSoftware
 {
@@ -263,30 +262,25 @@ namespace FThingSoftware
             return lerp.normalized;
         }
 
-        // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
+        // 引数のupwardsを省略した場合に、Vector3.upがデフォルト引数となるようにオーバーロード
         public static Quaternion LookRotation(Vector3 forward)
+        {
+            return LookRotation(forward, Vector3.up);
+        }
+
+        // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
+        public static Quaternion LookRotation(Vector3 forward, Vector3 upwards)
         {
             // オブジェクトの正面からforwardに向ける回転を取得
             Quaternion lookRotation = FromToRotation(Vector3.forward, forward);
-
-            // Look後のz軸(青)を求める
-            Vector3 zAxisAfterLook = lookRotation * Vector3.forward;
-            // 水平方向のみの成分にする(upwardsに垂直なベクトルにする)
-            Vector3 zAxisHorizontal = new Vector3(zAxisAfterLook.x, 0f, zAxisAfterLook.z);
-
-            // 回転後のx軸(赤)を求めるために
-            // Look後のz軸(青)の水平成分のみのベクトルを、垂直を軸にして90度回転させる
-            Quaternion getXAxisRotationFromZHorizontal = Quaternion.AngleAxis(90, Vector3.up);
-            Vector3 xAxisAfterRotate = getXAxisRotationFromZHorizontal * zAxisHorizontal;
-
-            // 回転後のy軸(緑)を求めるために
-            // 回転後のx軸(赤)を、Look後のz軸(青)を軸にして90度回転させる
-            Quaternion getYAxisRotationFromXAxisAfterRotate = Quaternion.AngleAxis(90, zAxisAfterLook);
-            Vector3 yAxisAfterRotate = getYAxisRotationFromXAxisAfterRotate * xAxisAfterRotate;
+            // 外積を用いてupwardsとforwardに垂直なベクトル(赤軸)を得る
+            Vector3 xAxisHorizontal = Vector3.Cross(upwards, forward);
+            // 回転後のy軸(緑軸)を求める
+            Vector3 yAxisAfterRotate = Vector3.Cross(forward, xAxisHorizontal);
 
             // Look後のy軸(緑) から 回転後のy軸(緑) へ修正する回転を求める
             Vector3 yAxisBeforeModify = lookRotation * Vector3.up;
-            Quaternion modifyRotation = Quaternion.FromToRotation(yAxisBeforeModify, yAxisAfterRotate);
+            Quaternion modifyRotation = FromToRotation(yAxisBeforeModify, yAxisAfterRotate);
 
             // 回転を合成して返す
             return modifyRotation * lookRotation;
@@ -358,24 +352,6 @@ namespace FThingSoftware
             return slerp.normalized;
         }
 
-        // 球面四角形補間（Spherical and Quadrangle Interpolation）
-        // 4つのクォータニオンを補間する
-        // tは[0,1]の範囲でクランプされる
-        public static Quaternion Squad(Quaternion q1, Quaternion q2, Quaternion a, Quaternion b, float t)
-        {
-            t = Mathf.Clamp01(t);
-            return SquadUnclamped(q1, q2, a, b, t);
-        }
-
-        // 球面四角形補間（Spherical and Quadrangle Interpolation）
-        // tは[0,1]の範囲にクランプされない
-        public static Quaternion SquadUnclamped(Quaternion q1, Quaternion q2, Quaternion a, Quaternion b, float t)
-        {
-            Quaternion slerp1 = Slerp(q1, q2, t);
-            Quaternion slerp2 = Slerp(a, b, t);
-            return Slerp(slerp1, slerp2, 2 * t * (1 - t));
-        } 
-
         // ===============================
         // Operator
         // ===============================
@@ -428,6 +404,12 @@ namespace FThingSoftware
         public bool Equals(Quaternion other)
         {
             return x.Equals(other.x) && y.Equals(other.y) && z.Equals(other.z) && w.Equals(other.w);
+        }
+
+        // Hash値を計算できるようにする(Unityの実装を引用)
+        public override int GetHashCode()
+        {
+            return x.GetHashCode() ^ (y.GetHashCode() << 2) ^ (z.GetHashCode() >> 2) ^ (w.GetHashCode() >> 1);
         }
     }
 }
