@@ -14,12 +14,17 @@ public class RotateCube : MonoBehaviour
     public enum TestPattern
     {
         ANGLE_AXIS,
+
+        FROM_ROTATION,
+        LOOK_ROTATION,
+
+
         LERP,
         LERP_UNCLAMPED,
         SLERP,
         SLERP_UNCLAMPED,
         ROTATE_TOWARDS,
-        LOOK_ROTATION,
+        
     }
 
     [Header("AngleAxis")]
@@ -34,7 +39,7 @@ public class RotateCube : MonoBehaviour
     [Header("Lerp / Slerp")]
     [Range(0, 1)]
     public float t = 0;
-    [Range(-1, 2)]
+    [Range(0, 10)]
     public float t_unclamped = 0;
     public float fromAngle = 0;
     public Vector3 fromAxis = Vector3.zero;
@@ -71,6 +76,17 @@ public class RotateCube : MonoBehaviour
                     unityQuaternion = Quaternion.AngleAxis(angle, axis);
                     unityObj.transform.rotation = unityQuaternion;
                     originalQuaternion = FThingSoftware.Quaternion.AngleAxis(angle, axis);
+                    originalObj.transform.rotation = originalQuaternion;
+                }
+                break;
+
+            case TestPattern.LOOK_ROTATION:
+                {
+                    Vector3 lookDirection = targetObj.transform.position - this.transform.position;
+                    unityQuaternion = Quaternion.LookRotation(lookDirection);
+                    unityObj.transform.rotation = unityQuaternion;
+
+                    originalQuaternion = FThingSoftware.Quaternion.LookRotation(lookDirection);
                     originalObj.transform.rotation = originalQuaternion;
                 }
                 break;
@@ -117,6 +133,9 @@ public class RotateCube : MonoBehaviour
                     FThingSoftware.Quaternion toRotation_2 = FThingSoftware.Quaternion.AngleAxis(toAngle, toAxis);
                     FThingSoftware.Quaternion lerp_2 = FThingSoftware.Quaternion.Slerp(fromRotation_2, toRotation_2, t);
                     originalObj.transform.rotation = lerp_2;
+
+                    Debug.Log(lerp_1);
+                    Debug.Log(lerp_2);
                 }
                 break;
 
@@ -132,6 +151,9 @@ public class RotateCube : MonoBehaviour
                     FThingSoftware.Quaternion toRotation_2 = FThingSoftware.Quaternion.AngleAxis(toAngle, toAxis);
                     FThingSoftware.Quaternion lerp_2 = FThingSoftware.Quaternion.SlerpUnclamped(fromRotation_2, toRotation_2, t_unclamped);
                     originalObj.transform.rotation = lerp_2;
+
+                    Debug.Log(lerp_1);
+                    Debug.Log(lerp_2);
                 }
                 break;
 
@@ -155,16 +177,7 @@ public class RotateCube : MonoBehaviour
                 }
                 break;
 
-            case TestPattern.LOOK_ROTATION:
-                {
-                    Vector3 lookDirection = targetObj.transform.position - this.transform.position;
-                    unityQuaternion = Quaternion.LookRotation(lookDirection);
-                    unityObj.transform.rotation = unityQuaternion;
-
-                    originalQuaternion = FThingSoftware.Quaternion.LookRotation(lookDirection, originalObj.transform);
-                    originalObj.transform.rotation = originalQuaternion;
-                }
-                break;
+            
         }
 
         // Test AngleAxis()

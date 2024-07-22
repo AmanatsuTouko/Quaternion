@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 namespace FThingSoftware
 {
@@ -50,13 +51,13 @@ namespace FThingSoftware
 
                 // 角度が90度のときの誤差を補正する
                 float theta_x = (2 * (y * z + x * w) >= 0.9999999f) ? 1.0f : 2 * (y * z + x * w);
-                angle_x = MathF.Asin(theta_x) * Mathf.Rad2Deg;
+                angle_x = Mathf.Asin(theta_x) * Mathf.Rad2Deg;
 
-                if (MathF.Cos(angle_x * Mathf.Deg2Rad) != 0)
+                if (Mathf.Cos(angle_x * Mathf.Deg2Rad) != 0)
                 {
                     float y_top = 2 * (x * z - y * w);
                     float y_bottom = 2 * (w * w + z * z) - 1;
-                    angle_y = MathF.Atan2(-y_top, y_bottom) * Mathf.Rad2Deg;
+                    angle_y = Mathf.Atan2(-y_top, y_bottom) * Mathf.Rad2Deg;
 
                     float z_top = 2 * (x * y - z * w);
                     float z_bottom = 2 * (w * w + y * y) - 1;
@@ -130,7 +131,7 @@ namespace FThingSoftware
         // 指定した forward と upwards 方向に回転する
         public void SetLookRotation(Vector3 view)
         {
-            // this = LookRotation(view);
+            this = LookRotation(view);
         }
 
         // 回転を座標に対する角度の値(AngleAxis)に変換する
@@ -184,10 +185,10 @@ namespace FThingSoftware
 
             // 定義に従って成分を設定する
             return new Quaternion(
-                    axis.x * MathF.Sin(rad / 2),
-                    axis.y * MathF.Sin(rad / 2),
-                    axis.z * MathF.Sin(rad / 2),
-                    MathF.Cos(rad / 2)
+                    axis.x * Mathf.Sin(rad / 2),
+                    axis.y * Mathf.Sin(rad / 2),
+                    axis.z * Mathf.Sin(rad / 2),
+                    Mathf.Cos(rad / 2)
                 );
         }
 
@@ -220,7 +221,7 @@ namespace FThingSoftware
             if (axis == Vector3.zero) { return identity; }
 
             // 内積の定義から回転量を求める a・b = |a||b|cosθ なので
-            float rad = MathF.Acos(Vector3.Dot(fromDirection, toDirection) / (fromDirection.magnitude * toDirection.magnitude));
+            float rad = Mathf.Acos(Vector3.Dot(fromDirection, toDirection) / (fromDirection.magnitude * toDirection.magnitude));
 
             // 求めた軸と回転量でクォータニオンの生成
             return AngleAxis(Mathf.Rad2Deg * rad, axis);
@@ -249,6 +250,7 @@ namespace FThingSoftware
             if (dot < 0)
             {
                 b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
+                dot = -dot;
             }
 
             // 直線経路で補完する a*(1-t) + b*t
@@ -262,7 +264,7 @@ namespace FThingSoftware
         }
 
         // オブジェクトの正面(forward)を引数のforwardの向きに回転させる回転を生成する
-        public static Quaternion LookRotation(Vector3 forward, Transform objTransform)
+        public static Quaternion LookRotation(Vector3 forward)
         {
             // オブジェクトの正面からforwardに向ける回転を取得
             Quaternion lookRotation = FromToRotation(Vector3.forward, forward);
@@ -330,10 +332,12 @@ namespace FThingSoftware
         {
             // 2つの回転の内積を求める
             float dot = Dot(a, b);
-            // 内積が負の時、最短距離での補間を得るために片方を負にする
+            // 内積が負の時、最短距離での補間を得るために
+            // 片方の回転を負にして、内積を正の値にする
             if (dot < 0)
             {
                 b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
+                dot = -dot;
             }
 
             // 2つの回転の角度を求める
@@ -370,7 +374,7 @@ namespace FThingSoftware
             Quaternion slerp1 = Slerp(q1, q2, t);
             Quaternion slerp2 = Slerp(a, b, t);
             return Slerp(slerp1, slerp2, 2 * t * (1 - t));
-        }
+        } 
 
         // ===============================
         // Operator
